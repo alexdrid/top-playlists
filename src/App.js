@@ -5,7 +5,7 @@ let defaultStyle = {
   color: '#fff'
 };
 
-let fakeserverData = {
+let fakeServerData = {
   user: {
     name: 'Alex',
     playlists: [
