@@ -5,7 +5,7 @@ let defaultStyle = {
   color: '#fff'
 };
 
-let fakeServerData = {
+let fakeserverData = {
   user: {
     name: 'Alex',
     playlists: [
@@ -87,8 +87,14 @@ class Playlist extends Component {
     return (
       <div style={{ ...defaultStyle, display: 'inline-block', width: "25%" }}>
         <img />
-        <h3>Playlist Name</h3>
-        <ul><li>Song 1</li><li>Song 2</li><li>Song 3</li></ul>
+        <h3>{this.props.playlist.name}</h3>
+        <ul style={{ listStyle: 'none', textAlign: 'start'}}>
+          {
+            this.props.playlist.songs.map(song =>
+              <li>{song.name}</li>)
+          }
+          
+        </ul>
       </div>
     );
   }
@@ -101,9 +107,10 @@ class App extends Component {
   }
   componentDidMount() {
     setTimeout(() => {
-      this.setState({ serverData: fakeServerData });
+      this.setState({ serverData: fakeserverData });
     }, 1000);
   }
+
   render() {
     return (
       <div className="App">
@@ -115,10 +122,9 @@ class App extends Component {
             <PlaylistCounter playlists={this.state.serverData.user.playlists} />
             <HoursCounter playlists={this.state.serverData.user.playlists} />
             <Filter />
-            <Playlist />
-            <Playlist />
-            <Playlist />
-            <Playlist />
+            {this.state.serverData.user.playlists.map(playlist =>
+              <Playlist playlist={playlist} />
+            )}
           </div> : <h1 style={defaultStyle}>Loading...</h1>
         }
       </div>
