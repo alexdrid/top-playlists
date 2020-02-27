@@ -8,52 +8,12 @@ let defaultStyle = {
   color: '#fff'
 };
 
-// let fakeServerData = {
-//   user: {
-//     name: 'Alex',
-//     playlists: [
-//       {
-//         name: 'My favorites',
-//         songs: [
-//           { name: 'Beat It', duration: 1345 },
-//           { name: 'Cannelloni Makaroni', duration: 1236 },
-//           { name: 'Rosa helikopter', duration: 70000 }
-//         ]
-//       },
-//       {
-//         name: 'Discover Weekly',
-//         songs: [
-//           { name: 'Beat It', duration: 1345 },
-//           { name: 'Cannelloni Makaroni', duration: 1236 },
-//           { name: 'Rosa helikopter', duration: 70000 }
-//         ]
-//       },
-//       {
-//         name: 'Another playlist - the best!',
-//         songs: [
-//           { name: 'Beat It', duration: 1345 },
-//           { name: 'Cannelloni Makaroni', duration: 1236 },
-//           { name: 'Rosa helikopter', duration: 70000 }
-//         ]
-//       },
-//       {
-//         name: 'Playlist!',
-//         songs: [
-//           { name: 'Beat It', duration: 1345 },
-//           { name: 'Cannelloni Makaroni', duration: 1236 },
-//           { name: 'Rosa helikopter', duration: 70000 }
-//         ]
-//       }
-//     ]
-//   }
-// };
-
 class Button extends Component {
   render() {
     return (
       <button
         onClick={() => {
-          window.location = window.location.includes('localhost') 
+          window.location = window.location.href.includes('localhost') 
           ? 'http://localhost:8888/login' 
           : 'https://top-playlists.herokuapp.com/login'
         }}
@@ -61,8 +21,6 @@ class Button extends Component {
           marginTop: '20px',
           padding: '20px',
           fontSize: '30px',
-          // border: 'none',
-          // borderRadius: '5px',
         }}>
         <FontAwesomeIcon icon={faSpotify} style={{ marginRight: '12px' }} />
         Sign in with Spotify
