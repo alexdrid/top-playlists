@@ -52,7 +52,11 @@ class Button extends Component {
   render() {
     return (
       <button
-        onClick={() => window.location = 'http://localhost:8888/login'}
+        onClick={() => {
+          window.location = window.location.includes('localhost') 
+          ? 'http://localhost:8888/login' 
+          : 'https://top-playlists.herokuapp.com/login'
+        }}
         style={{
           marginTop: '20px',
           padding: '20px',
@@ -110,7 +114,7 @@ class Playlist extends Component {
     let playlist = this.props.playlist;
     return (
       <div style={{ ...defaultStyle, display: 'inline-block', width: "25%" }}>
-        <img src={playlist.imageUrl} alt='' style={{ width: '60px', height: '60px'}} />
+        <img src={playlist.imageUrl} alt='' style={{ objectFit: 'cover', width: '250px', height: '250px'}} />
         <h3>{this.props.playlist.name}</h3>
         <ul style={{ listStyle: 'none', textAlign: 'start' }}>
           {
