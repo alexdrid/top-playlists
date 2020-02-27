@@ -1,49 +1,71 @@
 import React, { Component } from 'react';
 import './App.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSpotify } from '@fortawesome/free-brands-svg-icons'
+import queryString from 'query-string';
 
 let defaultStyle = {
   color: '#fff'
 };
 
-let fakeServerData = {
-  user: {
-    name: 'Alex',
-    playlists: [
-      {
-        name: 'My favorites',
-        songs: [
-          { name: 'Beat It', duration: 1345 },
-          { name: 'Cannelloni Makaroni', duration: 1236 },
-          { name: 'Rosa helikopter', duration: 70000 }
-        ]
-      },
-      {
-        name: 'Discover Weekly',
-        songs: [
-          { name: 'Beat It', duration: 1345 },
-          { name: 'Cannelloni Makaroni', duration: 1236 },
-          { name: 'Rosa helikopter', duration: 70000 }
-        ]
-      },
-      {
-        name: 'Another playlist - the best!',
-        songs: [
-          { name: 'Beat It', duration: 1345 },
-          { name: 'Cannelloni Makaroni', duration: 1236 },
-          { name: 'Rosa helikopter', duration: 70000 }
-        ]
-      },
-      {
-        name: 'Playlist!',
-        songs: [
-          { name: 'Beat It', duration: 1345 },
-          { name: 'Cannelloni Makaroni', duration: 1236 },
-          { name: 'Rosa helikopter', duration: 70000 }
-        ]
-      }
-    ]
+// let fakeServerData = {
+//   user: {
+//     name: 'Alex',
+//     playlists: [
+//       {
+//         name: 'My favorites',
+//         songs: [
+//           { name: 'Beat It', duration: 1345 },
+//           { name: 'Cannelloni Makaroni', duration: 1236 },
+//           { name: 'Rosa helikopter', duration: 70000 }
+//         ]
+//       },
+//       {
+//         name: 'Discover Weekly',
+//         songs: [
+//           { name: 'Beat It', duration: 1345 },
+//           { name: 'Cannelloni Makaroni', duration: 1236 },
+//           { name: 'Rosa helikopter', duration: 70000 }
+//         ]
+//       },
+//       {
+//         name: 'Another playlist - the best!',
+//         songs: [
+//           { name: 'Beat It', duration: 1345 },
+//           { name: 'Cannelloni Makaroni', duration: 1236 },
+//           { name: 'Rosa helikopter', duration: 70000 }
+//         ]
+//       },
+//       {
+//         name: 'Playlist!',
+//         songs: [
+//           { name: 'Beat It', duration: 1345 },
+//           { name: 'Cannelloni Makaroni', duration: 1236 },
+//           { name: 'Rosa helikopter', duration: 70000 }
+//         ]
+//       }
+//     ]
+//   }
+// };
+
+class Button extends Component {
+  render() {
+    return (
+      <button
+        onClick={() => window.location = 'http://localhost:8888/login'}
+        style={{
+          marginTop: '20px',
+          padding: '20px',
+          fontSize: '30px',
+          // border: 'none',
+          // borderRadius: '5px',
+        }}>
+        <FontAwesomeIcon icon={faSpotify} style={{ marginRight: '12px' }} />
+        Sign in with Spotify
+      </button>
+    );
   }
-};
+}
 
 class PlaylistCounter extends Component {
   render() {
@@ -75,7 +97,7 @@ class Filter extends Component {
   render() {
     return (
       <div style={defaultStyle}>
-        <img />
+        <img alt='' />
         <input type="text" onKeyUp={(event) =>
           this.props.onTextChange(event.target.value)} />
       </div>
@@ -85,9 +107,10 @@ class Filter extends Component {
 
 class Playlist extends Component {
   render() {
+    let playlist = this.props.playlist;
     return (
       <div style={{ ...defaultStyle, display: 'inline-block', width: "25%" }}>
-        <img />
+        <img src={playlist.imageUrl} alt='' style={{ width: '60px', height: '60px'}} />
         <h3>{this.props.playlist.name}</h3>
         <ul style={{ listStyle: 'none', textAlign: 'start' }}>
           {
@@ -101,6 +124,7 @@ class Playlist extends Component {
   }
 }
 
+
 class App extends Component {
   constructor() {
     super();
@@ -111,33 +135,63 @@ class App extends Component {
   }
 
   componentDidMount() {
-    setTimeout(() => {
-      this.setState({ serverData: fakeServerData });
-    }, 1000);
+    let parsed = queryString.parse(window.location.search);
+    let accessToken = parsed.access_token;
+
+    fetch('https://api.spotify.com/v1/me', {
+      headers: {
+        'Authorization': 'Bearer ' + accessToken
+      }
+    }).then(response => response.json())
+      .then(data => this.setState({
+        user: {
+          name: data.display_name
+        }
+      }))
+
+    fetch('https://api.spotify.com/v1/me/playlists', {
+      headers: {
+        'Authorization': 'Bearer ' + accessToken
+      }
+    }).then(response => response.json())
+      .then(data =>
+        this.setState({
+          playlists: data.items.map(item => {
+            console.log(data.items);
+            return {
+              name: item.name,
+              imageUrl: item.images[0].url,
+              songs: []
+            }
+          })
+        })
+      );
   }
 
   render() {
-    let playlistsToRender = this.state.serverData.user ? this.state.serverData.user.playlists
-      .filter(playlist =>
-        playlist.name.toLowerCase().includes(
-          this.state.filterString.toLowerCase())
-      ) : []
+    let playlistsToRender =
+      this.state.user &&
+        this.state.playlists
+        ? this.state.playlists.filter(playlist =>
+          playlist.name.toLowerCase().includes(
+            this.state.filterString.toLowerCase())
+        ) : []
     return (
       <div className="App">
-        {this.state.serverData.user ?
+        {this.state.user ?
           <div>
-            <h1 style={{ ...defaultStyle, 'font-size': '54px' }}>
-              {this.state.serverData.user.name}'s Playlists
-          </h1>
+            <h1 style={{ ...defaultStyle, fontSize: '54px' }}>
+              {this.state.user.name}'s Playlists
+            </h1>
             <PlaylistCounter playlists={playlistsToRender} />
             <HoursCounter playlists={playlistsToRender} />
-            <Filter onTextChange={text => this.setState({ filterString: text })} />
-            {this.state.serverData.user.playlists.filter(playlist =>
-              playlist.name.toLowerCase().includes(this.state.filterString)
-            ).map(playlist =>
+            <Filter onTextChange={text =>
+              this.setState({ filterString: text })
+            } />
+            {playlistsToRender.map(playlist =>
               <Playlist playlist={playlist} />
             )}
-          </div> : <h1 style={defaultStyle}>Loading...</h1>
+          </div> : <Button />
         }
       </div>
     );
