@@ -15,7 +15,7 @@ class Button extends Component {
         onClick={() => {
           window.location = window.location.href.includes('localhost') 
           ? 'http://localhost:8888/login' 
-          : 'https://top-playlists.herokuapp.com/login'
+          : 'https://top-playlists-backend.herokuapp.com/login'
         }}
         style={{
           marginTop: '20px',
