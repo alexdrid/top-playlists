@@ -13,9 +13,9 @@ class Button extends Component {
     return (
       <button
         onClick={() => {
-          window.location = window.location.href.includes('localhost') 
-          ? 'http://localhost:8888/login' 
-          : 'https://top-playlists-backend.herokuapp.com/login'
+          window.location = window.location.href.includes('localhost')
+            ? 'http://localhost:8888/login'
+            : 'https://top-playlists-backend.herokuapp.com/login'
         }}
         style={{
           marginTop: '20px',
@@ -72,14 +72,13 @@ class Playlist extends Component {
     let playlist = this.props.playlist;
     return (
       <div style={{ ...defaultStyle, display: 'inline-block', width: "25%" }}>
-        <img src={playlist.imageUrl} alt='' style={{ objectFit: 'cover', width: '250px', height: '250px'}} />
+        <img src={playlist.imageUrl} alt='' style={{ objectFit: 'cover', width: '250px', height: '250px' }} />
         <h3>{this.props.playlist.name}</h3>
         <ul style={{ listStyle: 'none', textAlign: 'start' }}>
           {
             this.props.playlist.songs.map(song =>
               <li>{song.name}</li>)
           }
-
         </ul>
       </div>
     );
@@ -99,13 +98,10 @@ class App extends Component {
   componentDidMount() {
     let parsed = queryString.parse(window.location.search);
     let accessToken = parsed.access_token;
-    if(!accessToken){
+    if (!accessToken)
       return;
-    }
     fetch('https://api.spotify.com/v1/me', {
-      headers: {
-        'Authorization': 'Bearer ' + accessToken
-      }
+      headers: { 'Authorization': 'Bearer ' + accessToken }
     }).then(response => response.json())
       .then(data => this.setState({
         user: {
@@ -114,22 +110,43 @@ class App extends Component {
       }))
 
     fetch('https://api.spotify.com/v1/me/playlists', {
-      headers: {
-        'Authorization': 'Bearer ' + accessToken
-      }
+      headers: { 'Authorization': 'Bearer ' + accessToken }
     }).then(response => response.json())
-      .then(data =>
-        this.setState({
-          playlists: data.items.map(item => {
-            console.log(data.items);
-            return {
-              name: item.name,
-              imageUrl: item.images[0].url,
-              songs: []
-            }
+      .then(playlistData => {
+        let playlists = playlistData.items
+        let trackDataPromises = playlists.map(playlist => {
+          let responsePromise = fetch(playlist.tracks.href, {
+            headers: { 'Authorization': 'Bearer ' + accessToken }
           })
+          let trackDataPromise = responsePromise
+            .then(response => response.json())
+          return trackDataPromise
         })
-      );
+        let allTracksDataPromises =
+          Promise.all(trackDataPromises)
+        let playlistsPromise = allTracksDataPromises.then(trackDatas => {
+          trackDatas.forEach((data, i) => {
+            playlists[i].trackDatas = data.items
+              .map(item => item.track)
+              .map(trackData => ({
+                name: trackData.name,
+                duration: trackData.duration_ms / 1000
+              }))
+          })
+          return playlists
+        })
+        return playlistsPromise
+      })
+      .then(playlists => this.setState({
+        playlists: playlists.map(item => {
+          return {
+            name: item.name,
+            imageUrl: item.images[0].url,
+            songs: item.trackDatas.slice(0, 3)
+          }
+        })
+      }))
+
   }
 
   render() {
